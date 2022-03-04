@@ -1,0 +1,170 @@
+Week5 Assessment:-
+
+Question1:-
+
+Query:
+CREATE TABLE new_table AS SELECT * FROM original_table;
+
+Explanation:
+It inherits only the basic column definitions, null settings 
+and default values of the original table.
+
+
+
+Question2:-
+
+Query:
+CREATE TABLE new_table LIKE original_table;
+
+Explanation:
+To inherit all table definitions but doesn't copy the data
+
+
+
+Question3:-
+
+Query1:
+SELECT TOP 10 * FROM Student ORDER BY ID DESC
+
+Query2:
+select max(SalaryOfEmp), min(SalaryOfEmp) from Employee;
+
+
+
+Question4:-
+
+create database Db
+use Db
+create table transactions( 
+	transaction_id int, 
+	user_id int, 
+	transaction_date date, 
+	amount long int)
+
+!pip install jinjasql
+from jinjasql import JinjaSql
+from six import string_types
+from copy import deepcopy
+
+user_transaction_template = '''
+select 
+    user_id
+    , count(*) as num_transactions
+    , sum(amount) as total_amount
+from 
+    transactions
+where
+    user_id = 1234
+    and transaction_date = '2022-03-02'
+group by
+    user_id
+'''
+
+params = {
+    'user_id': 1234,
+    'transaction_date': '2022-03-02'
+}
+
+j = JinjaSql(param_style='pyformat')
+
+query,bind_params = j.prepare_query(user_transaction_template,params)
+
+print(query)
+
+
+
+Question5:-
+
+select FirstName, SurName from Student
+where FirstName like P% and SurName like S%
+
+
+
+
+Question6:-
+
+SELECT TOP 1 * FROM Student ORDER BY ID DESC
+
+
+
+
+Question7:-
+
+CREATE TABLE Employees(
+    EmployeeID int NOT NULL PRIMARY KEY,
+    FirstName varchar(50) NOT NULL,
+    LastName varchar(50) NOT NULL,
+    ManagerID int NULL
+)
+
+INSERT INTO Employees VALUES(1,'Siddhant','Sharma',NULL)
+INSERT INTO Employees VALUES(2,'Sri','Harsha',1)
+INSERT INTO Employees VALUES(3,'Antrixsh','gupta',1)
+INSERT INTO Employees VALUES(4,'Prajakta','Sharma',2)
+INSERT INTO Employees VALUES(5,'Govind','Kumar',2)
+INSERT INTO Employees VALUES(6,'Bhargav','Kumar',3)
+INSERT INTO Employees VALUES(7,'Nirupama','Ponnapudi',3)
+INSERT INTO Employees VALUES(8,'Amogh','Kumar',5)
+INSERT INTO Employees VALUES(9,'Vikas','Goyal',6)
+INSERT INTO Employees VALUES(10,'Naga','Sowmya',6)
+
+select *from Employees;
+
+WITH
+    cteReports(EmpID, FirstName, LastName, MgrID, EmpLevel)
+    AS
+    (
+        SELECT EmployeeID, FirstName, LastName, ManagerID,1
+        From Employees
+        Where ManagerID is NULL
+        UNION ALL
+        SELECT e.EmployeeID, e.FirstName, e.LastName, e.ManagerID, r.EmpLevel + 1
+        FROM Employees e 
+            INNER JOIN cteReports r 
+            ON e.ManagerID = r.EmpID
+    )
+
+    SELECT 
+        FirstName + ' ' + LastName AS FullName,
+        EmpLevel,
+        (Select FirstName + ' ' + LastName AS FullName FROM Employees
+            WHERE EmployeeID = cteReports.MgrID) AS ManagerID
+            From cteReports
+            Order BY EmpLevel,MgrID 
+
+
+
+
+Question8:-
+
+CREATE TABLE NestingTest
+(
+    NestingTestID INT IDENTITY(1, 1),
+    Test INT NULL
+);
+
+CREATE OR ALTER TRIGGER TR_IUD_NestingTest ON NestingTest
+FOR UPDATE, DELETE
+AS
+DECLARE @Operation VARCHAR(15)
+ 
+
+IF EXISTS (SELECT 0 FROM deleted)
+BEGIN 
+   SELECT @Operation = 'UPDATE'
+END ELSE
+BEGIN
+   SELECT @Operation = 'DELETE'
+END 
+PRINT @Operation
+
+//Testing trigger
+
+ 
+UPDATE dbo.NestingTest
+SET Test = 1
+WHERE NestingTestID = 1;
+ 
+DELETE FROM dbo.NestingTest
+WHERE NestingTestID = 1;
+
